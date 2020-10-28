@@ -10,12 +10,12 @@ import myshop.model.InterProductDAO;
 import myshop.model.ProductDAO;
 
 public class IndexController extends AbstractController {
-	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public String toString() {
 		return "@@@ 클래스 IndexController의 인스턴스 메소드 toString() 호출함 @@@";
 	}
-	
+	/////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		InterProductDAO pdao = new ProductDAO();
