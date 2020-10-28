@@ -54,7 +54,7 @@
 			</div>
 			
 			<div class="col-md-4">
-				<a href="<%= ctxPath %>/member/memberRegister.up">회원가입</a>
+				<a href="<%= ctxPath %>/member/memberRegister.an">회원가입</a>
 			</div>
 			
 			<div class="col-md-4">
