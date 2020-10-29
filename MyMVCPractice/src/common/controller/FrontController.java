@@ -37,7 +37,6 @@ public class FrontController extends HttpServlet {
 			while(en.hasMoreElements()) {
 				String key = (String)en.nextElement();
 				String className = pr.getProperty(key);
-				System.out.println(key);
 				
 				if(className != null) {
 					className = className.trim();
@@ -47,7 +46,6 @@ public class FrontController extends HttpServlet {
 					cmdMap.put(key, obj);
 				}
 			}
-			System.out.println(cmdMap.size());
 		} catch (FileNotFoundException e) {
 			System.out.println(">>> 문자열로 명명되어진 클래스가 존재하지 않습니다. <<<");
 			e.printStackTrace();
