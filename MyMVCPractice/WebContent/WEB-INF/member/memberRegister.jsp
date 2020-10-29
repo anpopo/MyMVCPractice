@@ -1,7 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 
-
+<%
+	String ctxPath = request.getContextPath();
+%>
 
 
 <jsp:include page="../header2.jsp" />
@@ -36,6 +38,9 @@ table#tblMemberRegister td {
 </style>
 
 <script type="text/javascript">
+
+	var flagIdDuplicateClick = false;
+	var flagEmailDuplicateClick = false;
 
 	$(document).ready(function() {
 		$("span.error").hide();
@@ -98,8 +103,337 @@ table#tblMemberRegister td {
 	            $(":input").prop("disabled", false);
 	         }
 	      });
+		
+		$("input#pwdcheck").blur(function() {
+			var pwd = $("input#pwd").val().trim();
+			var pwdcheck = $(this).val().trim();
 
+			// 암호와 암호확인 값이 같지 않은 경우
+			if (pwd != pwdcheck) {
+				// 입력하지 않았거나 공백만 입력했을 경우
+				$(":input").prop("disabled", true);
+				$(this).prop("disabled", false);
+				$("input#pwd").prop("disabled", false);
+
+				//$(this).next().show();
+				$(this).parent().find(".error").show();
+				$(this).focus();
+			}
+			// 암호와 암호확인 값이 같은 경우
+			else {
+				$(this).parent().find(".error").hide();
+				$(":input").prop("disabled", false);
+			}
+		});
+		
+		$("input#email")
+		.blur(function() {
+			var email = $(this).val().trim();
+
+			// 숫자/문자/특수문자/ 포함 형태의 8~15자리 이내의 암호 정규표현식 객체 생성
+			var regExp = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+			// 또는
+			var bool = regExp.test(email);
+
+			if (!bool) {
+				// 입력하지 않았거나 공백만 입력했을 경우
+				$(":input").prop("disabled",
+						true);
+				$(this).prop("disabled", false);
+
+				//$(this).next().show();
+				$(this).parent().find(".error")
+						.show();
+				$(this).focus();
+			} else {
+				$(this).parent().find(".error")
+						.hide();
+				$(":input").prop("disabled",
+						false);
+			}
+		});
+		
+		$("input#hp2").blur(function() {
+			var hp2 = $(this).val().trim();
+
+			// 숫자/문자/특수문자/ 포함 형태의 8~15자리 이내의 암호 정규표현식 객체 생성
+			var regExp = /^[1-9][0-9]{2,3}$/g;
+			// 또는
+			var bool = regExp.test(hp2);
+
+			if (!bool) {
+				// 입력하지 않았거나 공백만 입력했을 경우
+				$(":input").prop("disabled", true);
+				$(this).prop("disabled", false);
+
+				//$(this).next().show();
+				$(this).parent().find(".error").show();
+				$(this).focus();
+			} else {
+				$(this).parent().find(".error").hide();
+				$(":input").prop("disabled", false);
+			}
+		});
+		
+		$("input#hp3").blur(function() {
+			var hp3 = $(this).val().trim();
+
+			// 숫자/문자/특수문자/ 포함 형태의 8~15자리 이내의 암호 정규표현식 객체 생성
+			var regExp = /^\d{4}$/g;
+			// 또는
+			var bool = regExp.test(hp3);
+
+			if (!bool) {
+				// 입력하지 않았거나 공백만 입력했을 경우
+				$(":input").prop("disabled", true);
+				$(this).prop("disabled", false);
+
+				//$(this).next().show();
+				$(this).parent().find(".error").show();
+				$(this).focus();
+			} else {
+				$(this).parent().find(".error").hide();
+				$(":input").prop("disabled", false);
+			}
+		});
+		
+		$("img#zipcodeSearch").click(function() {
+			new daum.Postcode({
+				oncomplete : function(
+						data) {
+					// 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+					// 각 주소의 노출 규칙에 따라 주소를 조합한다.
+					// 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+					var addr = ''; // 주소 변수
+					var extraAddr = ''; // 참고항목 변수
+
+					//사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+					if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+						addr = data.roadAddress;
+					} else { // 사용자가 지번 주소를 선택했을 경우(J)
+						addr = data.jibunAddress;
+					}
+
+					// 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+					if (data.userSelectedType === 'R') {
+						// 법정동명이 있을 경우 추가한다. (법정리는 제외)
+						// 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+						if (data.bname !== ''
+								&& /[동|로|가]$/g
+										.test(data.bname)) {
+							extraAddr += data.bname;
+						}
+						// 건물명이 있고, 공동주택일 경우 추가한다.
+						if (data.buildingName !== ''
+								&& data.apartment === 'Y') {
+							extraAddr += (extraAddr !== '' ? ', '
+									+ data.buildingName
+									: data.buildingName);
+						}
+						// 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+						if (extraAddr !== '') {
+							extraAddr = ' ('
+									+ extraAddr
+									+ ')';
+						}
+						// 조합된 참고항목을 해당 필드에 넣는다.
+						document
+								.getElementById("extraAddress").value = extraAddr;
+
+					} else {
+						document
+								.getElementById("extraAddress").value = '';
+					}
+
+					// 우편번호와 주소 정보를 해당 필드에 넣는다.
+					document
+							.getElementById('postcode').value = data.zonecode;
+					document
+							.getElementById("address").value = addr;
+					// 커서를 상세주소 필드로 이동한다.
+					document
+							.getElementById(
+									"detailAddress")
+							.focus();
+				}
+			}).open();
+		});
+		
+		var html = "";
+		for (var i = 1; i <= 12; i++) {
+			if (i < 10) {
+				html = "<option value ='0"+i+"'>0" + i
+						+ "</option>";
+			} else {
+				html = "<option value ='"+i+"'>" + i
+						+ "</option>";
+			}
+			$("select#birthmm").append(html);
+		}
+		
+		html = "";
+		for (var i = 1; i <= 31; i++) {
+			if (i < 10) {
+				html = "<option value ='0"+i+"'>0" + i
+						+ "</option>";
+			} else {
+				html = "<option value ='"+i+"'>" + i
+						+ "</option>";
+			}
+			$("select#birthdd").append(html);
+		}
+		
+		$("input#datepicker").datepicker({
+			dateFormat : 'yy-mm-dd' //Input Display Format 변경
+			,
+			showOtherMonths : true //빈 공간에 현재월의 앞뒤월의 날짜를 표시
+			,
+			showMonthAfterYear : true //년도 먼저 나오고, 뒤에 월 표시
+			,
+			changeYear : true //콤보박스에서 년 선택 가능
+			,
+			changeMonth : true //콤보박스에서 월 선택 가능                
+			,
+			showOn : "both" //button:버튼을 표시하고,버튼을 눌러야만 달력 표시 ^ both:버튼을 표시하고,버튼을 누르거나 input을 클릭하면 달력 표시  
+			,
+			buttonImage : "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif" //버튼 이미지 경로
+			,
+			buttonImageOnly : true //기본 버튼의 회색 부분을 없애고, 이미지만 보이게 함
+			,
+			buttonText : "선택" //버튼에 마우스 갖다 댔을 때 표시되는 텍스트                
+			,
+			yearSuffix : "년" //달력의 년도 부분 뒤에 붙는 텍스트
+			,
+			monthNamesShort : [ '1', '2', '3',
+					'4', '5', '6', '7', '8',
+					'9', '10', '11', '12' ] //달력의 월 부분 텍스트
+			,
+			monthNames : [ '1월', '2월', '3월',
+					'4월', '5월', '6월', '7월',
+					'8월', '9월', '10월', '11월',
+					'12월' ] //달력의 월 부분 Tooltip 텍스트
+			,
+			dayNamesMin : [ '일', '월', '화', '수',
+					'목', '금', '토' ] //달력의 요일 부분 텍스트
+			,
+			dayNames : [ '일요일', '월요일', '화요일',
+					'수요일', '목요일', '금요일', '토요일' ]
+			//달력의 요일 부분 Tooltip 텍스트
+			//,minDate: "-1M" //최소 선택일자(-1D:하루전, -1M:한달전, -1Y:일년전)
+			//,maxDate: "+1M" //최대 선택일자(+1D:하루후, +1M:한달후, +1Y:일년후)                
+		});
+		
+		//초기값을 오늘 날짜로 설정
+		//(-1D:하루전, -1M:한달전, -1Y:일년전), (+1D:하루후, -1M:한달후, -1Y:일년후) 
+		$('#datepicker').datepicker('setDate', 'today');
+		
+		
+
+		// === 전체 datepicker 옵션 일괄 설정하기 ===  
+		//     한번의 설정으로 $("#fromDate"), $('#toDate')의 옵션을 모두 설정할 수 있다.
+		$(function() {
+			//모든 datepicker에 대한 공통 옵션 설정
+			$.datepicker
+					.setDefaults({
+						dateFormat : 'yy-mm-dd' //Input Display Format 변경
+						,
+						showOtherMonths : true //빈 공간에 현재월의 앞뒤월의 날짜를 표시
+						,
+						showMonthAfterYear : true //년도 먼저 나오고, 뒤에 월 표시
+						,
+						changeYear : true //콤보박스에서 년 선택 가능
+						,
+						changeMonth : true //콤보박스에서 월 선택 가능                
+						,
+						showOn : "both" //button:버튼을 표시하고,버튼을 눌러야만 달력 표시 ^ both:버튼을 표시하고,버튼을 누르거나 input을 클릭하면 달력 표시  
+						,
+						buttonImage : "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif" //버튼 이미지 경로
+						,
+						buttonImageOnly : true //기본 버튼의 회색 부분을 없애고, 이미지만 보이게 함
+						,
+						buttonText : "선택" //버튼에 마우스 갖다 댔을 때 표시되는 텍스트                
+						,
+						yearSuffix : "년" //달력의 년도 부분 뒤에 붙는 텍스트
+						,
+						monthNamesShort : [ '1', '2', '3', '4',
+								'5', '6', '7', '8', '9', '10',
+								'11', '12' ] //달력의 월 부분 텍스트
+						,
+						monthNames : [ '1월', '2월', '3월', '4월',
+								'5월', '6월', '7월', '8월', '9월',
+								'10월', '11월', '12월' ] //달력의 월 부분 Tooltip 텍스트
+						,
+						dayNamesMin : [ '일', '월', '화', '수',
+								'목', '금', '토' ] //달력의 요일 부분 텍스트
+						,
+						dayNames : [ '일요일', '월요일', '화요일',
+								'수요일', '목요일', '금요일', '토요일' ]
+					//달력의 요일 부분 Tooltip 텍스트
+					// ,minDate: "-1M" //최소 선택일자(-1D:하루전, -1M:한달전, -1Y:일년전)
+					// ,maxDate: "+1M" //최대 선택일자(+1D:하루후, -1M:한달후, -1Y:일년후)                    
+					});
+			
+			//input을 datepicker로 선언
+			$("#fromDate").datepicker();
+			$("#toDate").datepicker();
+
+			//From의 초기값을 오늘 날짜로 설정
+			$('#fromDate').datepicker('setDate', 'today'); //(-1D:하루전, -1M:한달전, -1Y:일년전), (+1D:하루후, +1M:한달후, +1Y:일년후)
+			//To의 초기값을 내일로 설정
+			$('#toDate').datepicker('setDate', '+1D'); //(-1D:하루전, -1M:한달전, -1Y:일년전), (+1D:하루후, +1M:한달후, +1Y:일년후)
+
+		});
+		
+		$("img#idcheck").click(function(){
+			flagIdDuplicateClick = true;
+			
+			$.ajax({
+				url:"<%= ctxPath%>/member/idDuplicateCheck.up",
+				data:{"userid":$("input#userid").val()},
+				type:"post",
+				dataType:"json",
+				success:function(){},
+				error:function(){}
+				
+			});
+			
+			
+		});
+		
 	});
+	
+	
+	
+	function goRegister() {
+		// 필수입력 사항 체크를 위한 flag
+		var bFlagRequiredInfo = false;
+		
+		// 성별을 선택했는지 확인하기 위한 객체
+		var radioCheckedLength = $("input:radio[name=gender]:checked").length;
+		
+		if (radioCheckedLength == 0) {
+			alert("성별을 선택해 주셔야 합니다잉!!!!!!!!!!!!!!!")
+			return;
+		}
+		
+		if (!$("input:checkbox[id=agree]").prop("checked")) {
+			alert("이용약관을 동의해 주셔야 합니다잉!!!!!!!!!!!!!!!")
+			return;
+		}
+		
+		$(".requiredInfo").each(function(){
+			var data = $(this).val();
+			if(data == "") {
+				
+			}
+		});
+		
+		var frm = document.registerFrm;
+		frm.action = "memberRegister.up"
+		frm.method = "post";
+		frm.submit();
+	}
 </script>
 
 
