@@ -86,4 +86,7 @@
     from tbl_member
     where status = 1 and userid = 'leess' and pwd = '9695b88a59a1610320897fa84cb7e144cc51f2984520efb77111d94b402a8382';
     
+    select *
+    from tbl_loginhistory;
+    
     drop table tbl_loginhistory purge;

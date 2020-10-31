@@ -153,7 +153,7 @@ public class MemberDAO implements InterMemberDAO {
 					"    where status = 1 and userid = ? and pwd = ? ";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, paraMap.get("userid"));
-			pstmt.setString(2, paraMap.get("pwd"));
+			pstmt.setString(2, Sha256.encrypt(paraMap.get("pwd")));
 			
 			rs = pstmt.executeQuery();
 			
@@ -191,7 +191,7 @@ public class MemberDAO implements InterMemberDAO {
 			
 			
 		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
-
+			e.printStackTrace();
 		} finally {
 			close();
 		}

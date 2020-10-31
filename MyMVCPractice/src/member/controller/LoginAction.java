@@ -59,7 +59,7 @@ public class LoginAction extends AbstractController {
 			session.setAttribute("loginuser", loginuser);
 			
 			String message = "로그인성공ㅊㅋㅊㅋㅊㅋ~~";
-			String loc = request.getContextPath() + "/index.up";
+			String loc = request.getContextPath() + "/index.an";
 			request.setAttribute("message", message);
 			request.setAttribute("loc", loc);
 			
