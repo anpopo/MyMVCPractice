@@ -20,13 +20,17 @@ public class MemberVO {
     private int idle;  // 휴면 유무 0: 활동중 1: 휴면중
     
     
+    private String birthyyyy;
+    private String birthmm;
+    private String birthdd;
+    
+    private boolean requirePwdChange;
+    
+    
+    
     public MemberVO() {
 		// TODO Auto-generated constructor stub
 	}
-    
-    
-    
-    
     
     
 	public MemberVO(String userid, String pwd, String name, String email, String mobile, String postcode,
@@ -45,10 +49,6 @@ public class MemberVO {
 		this.birthday = birthday;
 		
 	}
-
-
-
-
 
 
 	public String getUserid() {
@@ -153,6 +153,49 @@ public class MemberVO {
 	public void setIdle(int idle) {
 		this.idle = idle;
 	}
+
+
+	public String getBirthyyyy() {
+		return birthyyyy;
+	}
+
+
+	public void setBirthyyyy(String birthyyyy) {
+		this.birthyyyy = birthyyyy;
+	}
+
+
+	public String getBirthmm() {
+		return birthmm;
+	}
+
+
+	public void setBirthmm(String birthmm) {
+		this.birthmm = birthmm;
+	}
+
+
+	public String getBirthdd() {
+		return birthdd;
+	}
+
+
+	public void setBirthdd(String birthdd) {
+		this.birthdd = birthdd;
+	}
+
+
+	public boolean isRequirePwdChange() {
+		return requirePwdChange;
+	}
+
+
+	public void setRequirePwdChange(boolean requirePwdChange) {
+		this.requirePwdChange = requirePwdChange;
+	}
+	
+	
+	
     
     
 }

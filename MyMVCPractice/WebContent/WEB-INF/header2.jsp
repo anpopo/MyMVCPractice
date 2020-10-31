@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+    
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
     String ctxPath = request.getContextPath();
     //    /MyMVC
@@ -23,12 +25,7 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 		
-		var vhtml = "";
-		for(var i=0; i<15; i++) {
-			vhtml += (i+1)+".내용물<br/>";
-		}
 		
-		$("#sideconent").html(vhtml);
 		
 	});
 
@@ -57,9 +54,11 @@
 				<a href="<%= ctxPath %>/member/memberRegister.an">회원가입</a>
 			</div>
 			
-			<div class="col-md-3">
-				<a href="<%= ctxPath %>/member/memberList.jsp">회원목록</a>
-			</div>
+			<c:if test="${sessionScope.loginuser != null}">
+				<div class="col-md-4">
+					<a href="<%= ctxPath %>/member/memberList.jsp">회원목록</a>
+				</div>
+			</c:if>
 			
 			<div class="col-md-3">
 				<a href="<%= ctxPath %>/member/memberList.jsp">감자네의 철학</a>

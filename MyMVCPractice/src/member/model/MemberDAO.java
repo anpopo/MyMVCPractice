@@ -1,11 +1,18 @@
 package member.model;
 
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 import java.sql.*;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
+import util.security.AES256;
+import util.security.SecretMyKey;
+import util.security.Sha256;
 
 public class MemberDAO implements InterMemberDAO {
 	private DataSource ds;
@@ -13,14 +20,18 @@ public class MemberDAO implements InterMemberDAO {
 	private PreparedStatement pstmt;
 	private ResultSet rs;
 	
+	private AES256 aes;
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public MemberDAO() {
 		try {
 			Context initContext = new InitialContext();
 		    Context envContext  = (Context)initContext.lookup("java:/comp/env");
-		    ds = (DataSource)envContext.lookup("jdbc/mymvc_oracle");
+		    ds = (DataSource)envContext.lookup("jdbc/mymvcpractice_oracle");
+		    aes = new AES256(SecretMyKey.KEY);
 		} catch(NamingException e) {
+			e.printStackTrace();
+		} catch(UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 	}
@@ -50,10 +61,10 @@ public class MemberDAO implements InterMemberDAO {
 			pstmt = conn.prepareStatement(sql);
 			
 			pstmt.setString(1, member.getUserid());
-			pstmt.setString(2, member.getPwd());
+			pstmt.setString(2, Sha256.encrypt(member.getPwd()));
 			pstmt.setString(3, member.getName());
-			pstmt.setString(4, member.getEmail());
-			pstmt.setString(5, member.getMobile());
+			pstmt.setString(4, aes.encrypt(member.getEmail()));
+			pstmt.setString(5, aes.encrypt(member.getMobile()));
 			pstmt.setString(6, member.getPostcode());
 			pstmt.setString(7, member.getAddress());
 			pstmt.setString(8, member.getDetailaddress());
@@ -63,11 +74,128 @@ public class MemberDAO implements InterMemberDAO {
 			
 			
 			result = pstmt.executeUpdate();
+		} catch(UnsupportedEncodingException | GeneralSecurityException e) {
+			e.printStackTrace();
 		} finally {
 			close();
 		}
 		
 		return result;
 	}
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	@Override
+	public boolean idDuplicateCheck(String userid) throws SQLException {
+		boolean isExist = false;
+		
+		try {
+			conn = ds.getConnection();
+			String sql = "select userid\n"+
+					"    from tbl_member\n"+
+					"    where userid = ? ";
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, userid);
+			
+			rs = pstmt.executeQuery();
+			
+			isExist = rs.next();  // 행이 있으면 (중복된 유저아이디) true, 행이 없으면 (중복되지 않은 유저아이디) false
+			
+			
+		} finally {
+			close();
+		}
+		
+		return isExist;
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public boolean emailDuplicateCheck(String email) throws SQLException {
+		boolean isExist = false;
+		
+		
+		try {
+			conn = ds.getConnection();
+			String sql = "select email\n"+
+					"    from tbl_member\n"+
+					"    where email = ? ";
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, aes.encrypt(email));
+			
+			rs = pstmt.executeQuery();
+			
+			isExist = rs.next();  // 행이 있으면 (중복된 유저아이디) true, 행이 없으면 (중복되지 않은 유저아이디) false
+			
+			
+		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+
+		return isExist;
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public MemberVO selectOneMember(Map<String, String> paraMap) throws SQLException {
+		MemberVO member = null;
+		
+		try {
+			conn = ds.getConnection();
+			String sql = "select userid, name, email, mobile, postcode, address, detailaddress, extraaddress, gender\n"+
+					"    , substr(birthday,1,4) as birthyyyy, substr(birthday,6,2) as birthmm, substr(birthday,8) as birthdd, coin, point\n"+
+					"    , to_char(registerday, 'yyyy-mm-dd') as registerday\n"+
+					"    , trunc(months_between(sysdate, lastpwdchangedate)) as pwdchangegap \n"+
+					"    from tbl_member\n"+
+					"    where status = 1 and userid = ? and pwd = ? ";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, paraMap.get("userid"));
+			pstmt.setString(2, paraMap.get("pwd"));
+			
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				member = new MemberVO();
+				member.setUserid(rs.getString(1));
+				member.setName(rs.getString(2));
+				member.setEmail(aes.decrypt(rs.getString(3)));
+				member.setMobile(aes.decrypt(rs.getString(4)));
+				member.setPostcode(rs.getString(5));
+				member.setAddress(rs.getString(6));
+				member.setDetailaddress(rs.getString(7));
+				member.setExtraaddress(rs.getString(8));
+				member.setGender(rs.getString(9));
+				member.setBirthday(rs.getString(10) + "-" + rs.getString(11) + "-" + rs.getString(12));
+				member.setCoin(rs.getInt(13));
+				member.setPoint(rs.getInt(14));
+				member.setRegisterday(rs.getString(15));
+				member.setBirthyyyy(rs.getString(10));
+				member.setBirthmm(rs.getString(11));
+				member.setBirthdd(rs.getString(12));
+				
+				if (rs.getInt(16) >= 3) {
+					member.setRequirePwdChange(true);  // 로그인시 암호를 변경하라른 alert을 띄우도록 한다.
+				}
+				
+				sql = " insert into tbl_loginhistory(fk_userid, clientip) "
+						+ " values(?, ?) ";
+				
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, paraMap.get("userid"));
+				pstmt.setString(2, paraMap.get("clientip"));
+				pstmt.executeUpdate();
+			}
+			
+			
+		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
+
+		} finally {
+			close();
+		}
+		
+		return member;
+	}
 }

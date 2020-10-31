@@ -15,6 +15,7 @@ public class MemberRegisterAction extends AbstractController {
 		String method = request.getMethod();
 		
 		if ("GET".equals(method)) {
+			super.setRedirect(false);
 			super.setViewPage("/WEB-INF/member/memberRegister.jsp");
 		} else {
 			String name = request.getParameter("name");
@@ -45,7 +46,7 @@ public class MemberRegisterAction extends AbstractController {
 			
 			if (n == 1) {
 				message = "회원가입 성공!!!!";
-				loc = request.getContextPath() + "/index.up";  // 시작페이지
+				loc = request.getContextPath() + "/index.an";  // 시작페이지
 			} else {
 				message = "회원가입 실패!!!!";
 				loc = "javascript:history.back()";  // 자바스크립트를 이용한 이전페이지로의 이동				

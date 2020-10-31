@@ -386,22 +386,65 @@ table#tblMemberRegister td {
 		});
 		
 		$("img#idcheck").click(function(){
-			flagIdDuplicateClick = true;
 			
-			$.ajax({
-				url:"<%= ctxPath%>/member/idDuplicateCheck.up",
-				data:{"userid":$("input#userid").val()},
-				type:"post",
-				dataType:"json",
-				success:function(){},
-				error:function(){}
+			if ($("input#userid").val().trim() != "") {
+				flagIdDuplicateClick = true;
 				
-			});
+				$.ajax({
+					url:"<%= ctxPath%>/member/idDuplicateCheck.an",
+					data:{"userid":$("input#userid").val()},
+					type:"post",
+					dataType:"json",
+					success:function(json){
+						if(json.isExists) {
+							$("span#idcheckResult").html("이미사용중인아이디입니당구리").css("color","red");
+							$("input#userid").val("");
+						} else {
+							$("span#idcheckResult").html("아이디 사용 쌉가능!").css("color","blue");
+						}
+					},
+					error: function(request, status, error){
+			        	alert("code: "+request.status+"\n"+"message: "+request.responseText+"\n"+"error: "+error);
+			        }
+					
+				});
+				
+			} else {
+				$("span#idcheckResult").html("아이디를 입력해주삼!").css("color","red");
+			}
 			
 			
 		});
 		
 	});
+	
+	function isExistEmailCheck() {
+		
+		if ($("input#email").val().trim() != "") {
+			
+			flagEmailDuplicateClick = true;
+			$.ajax({
+				url:"<%= ctxPath%>/member/emailDuplicateCheck.an",
+				data:{"email":$("input#email").val()},
+				type:"post",
+				dataType:"json",
+				success:function(json){
+					if (json.isEmail) {  // 이메일이 존재하고 있는다면!
+						$("span#emailCheckResult").html("이메일이 사용중입니당구리~").css("color","red");
+						$("input#email").val("");
+					} else {  // 중복되어지지 않은 이메일인 경우
+						$("span#emailCheckResult").html("쌉가능한 이메일~").css({"color":"green"}, {"font-size":"15pt"});
+					}
+				},
+				error: function(request, status, error){
+		        	alert("code: "+request.status+"\n"+"message: "+request.responseText+"\n"+"error: "+error);
+		        }
+			});
+		} else {
+			$("span#emailCheckResult").html("이메일을 입력해야지 임마~").css("color","red");
+		}
+		
+	}
 	
 	
 	
@@ -411,6 +454,16 @@ table#tblMemberRegister td {
 		
 		// 성별을 선택했는지 확인하기 위한 객체
 		var radioCheckedLength = $("input:radio[name=gender]:checked").length;
+		
+		if (!flagIdDuplicateClick) {
+			alert("아이디 중복확인을 클릭하여 ID중복검사를 하세요.");
+			return;
+		}
+		
+		if (!flagEmailDuplicateClick) {
+			alert("이메일 중복확인을 클릭하여 이메일 중복검사를 하세요.");
+			return;
+		}
 		
 		if (radioCheckedLength == 0) {
 			alert("성별을 선택해 주셔야 합니다잉!!!!!!!!!!!!!!!")
@@ -425,14 +478,20 @@ table#tblMemberRegister td {
 		$(".requiredInfo").each(function(){
 			var data = $(this).val();
 			if(data == "") {
-				
+				bFlagRequiredInfo = true;
+				alert("*로 표시된 필수 입력 사항은 모두 입력하셔야 합니다.")
+				return false;  // each문 break
 			}
 		});
 		
-		var frm = document.registerFrm;
-		frm.action = "memberRegister.up"
-		frm.method = "post";
-		frm.submit();
+		
+		if (!bFlagRequiredInfo) {
+			var frm = document.registerFrm;
+			frm.action = "memberRegister.an"
+			frm.method = "post";
+			frm.submit();
+			
+		}
 	}
 </script>
 

@@ -64,3 +64,26 @@
     insert into tbl_member(userid, pwd, name, email, mobile, postcode, address, detailaddress, extraaddress
     , gender, birthday)
     values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    
+    drop table tbl_member purge;
+    
+    rollback;
+    
+    select *
+    from tbl_member;
+    
+    create table tbl_loginhistory
+    (fk_userid              varchar2(20) not null
+    , logindate             date default sysdate not null
+    , clientip               varchar2(20) not null
+    , constraint FK_tbl_loginhistory foreign key(fk_userid) references tbl_member(userid)
+    );
+    
+    select userid, name, email, mobile, postcode, address, detailaddress, extraaddress, gender
+    , substr(birthday,1,4) as birthyyyy, substr(birthday,6,2) as birthmm, substr(birthday,8) as birthdd, coin, point
+    , to_char(registerday, 'yyyy-mm-dd') as registerday
+    , trunc(months_between(sysdate, lastpwdchangedate)) as pwdchangegap
+    from tbl_member
+    where status = 1 and userid = 'leess' and pwd = '9695b88a59a1610320897fa84cb7e144cc51f2984520efb77111d94b402a8382';
+    
+    drop table tbl_loginhistory purge;
