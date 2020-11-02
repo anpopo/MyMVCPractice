@@ -57,14 +57,20 @@ public class LoginAction extends AbstractController {
 			
 			HttpSession session = request.getSession();
 			session.setAttribute("loginuser", loginuser);
+			if (loginuser.isRequirePwdChange() == true) {
+				String message = "비번을 변경한지 3개월이 넘었삼! 암호변경하삼!";
+				String loc = request.getContextPath() + "/index.an";
+				// 원래는 위와 같이 index.up이 아닌 사용자의 암호를 변경해주는 페이지로 이동시켜 주어야 한다.
+				request.setAttribute("message", message);
+				request.setAttribute("loc", loc);
+				
+				super.setRedirect(false);
+				super.setViewPage("/WEB-INF/msg.jsp");
+			} else {
+				super.setRedirect(true);
+				super.setViewPage(request.getContextPath() + "/index.an");
+			}
 			
-			String message = "로그인성공ㅊㅋㅊㅋㅊㅋ~~";
-			String loc = request.getContextPath() + "/index.an";
-			request.setAttribute("message", message);
-			request.setAttribute("loc", loc);
-			
-			super.setRedirect(false);
-			super.setViewPage("/WEB-INF/msg.jsp");
 			
 			
 		} else {

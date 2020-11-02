@@ -90,3 +90,32 @@
     from tbl_loginhistory;
     
     drop table tbl_loginhistory purge;
+    
+    
+    
+    update tbl_member set registerday = add_months(registerday, -4), lastpwdchangedate = add_months(lastpwdchangedate, -4)
+    where userid = 'eomjh';
+    
+    commit;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
