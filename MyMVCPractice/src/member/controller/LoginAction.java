@@ -41,9 +41,23 @@ public class LoginAction extends AbstractController {
 		paraMap.put("clientip", clientip);
 		
 		InterMemberDAO mdao = new MemberDAO();
+		
 		MemberVO loginuser = mdao.selectOneMember(paraMap);
 		
 		if (loginuser != null) {
+			
+			if (loginuser.getIdle() == 1) {
+				String message = "휴면계정...이에요...관리자에게 문의하삼!!";
+				String loc = "javascript:history.back()";
+				// 휴면계정을 풀어주는 페이지로 이동시켜야 한다.
+				
+				request.setAttribute("message", message);
+				request.setAttribute("loc", loc);
+				
+				super.setRedirect(false);
+				super.setViewPage("/WEB-INF/msg.jsp");
+				return;
+			}
 			// System.out.println(loginuser.getName());			
 			// session 세션 이라는 저장소에 로그인 되어진 loginuser을 저장시켜두어야 한다!!!
 			// session이란 WAS 컴퓨터의 메모리 (RAM)의 일부분을 사용하는 것으로
@@ -57,6 +71,7 @@ public class LoginAction extends AbstractController {
 			
 			HttpSession session = request.getSession();
 			session.setAttribute("loginuser", loginuser);
+			
 			if (loginuser.isRequirePwdChange() == true) {
 				String message = "비번을 변경한지 3개월이 넘었삼! 암호변경하삼!";
 				String loc = request.getContextPath() + "/index.an";

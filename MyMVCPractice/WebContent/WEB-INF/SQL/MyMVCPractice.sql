@@ -98,8 +98,48 @@
     
     commit;
     
+    -- 마지막으로 로그인을 한지 12개월이 초과한 경우 또는 회원을 가입하고서 로그인을 하지 않은지 12개월을 초과한 경우
+    -- 로그인을 한지 1년이 지나서 휴면 상태로 되었삼. 관리자에게 문의하삼!@!@!@!@!@!@!@!@!@!@
+    
+    update tbl_member set registerday = add_months(registerday, -13), lastpwdchangedate = add_months(lastpwdchangedate, -13)
+    where userid = 'kangkc';
+
+    update tbl_loginhistory set logindate = add_months(logindate, +7)
+    where fk_userid = 'kangkc';
+    
+    update tbl_member set registerday = add_months(registerday, -14), lastpwdchangedate = add_months(lastpwdchangedate, -14)
+    where userid = 'youks';
+    
+    commit;
+    ----------------------------------------------------------------------------------------------------------------------------------
     
     
+     select max(logindate)
+    , trunc(months_between(sysdate, max(logindate))) as lastlogingap
+    from tbl_loginhistory
+    where fk_userid = 'leess';
+    
+    select trunc(months_between(sysdate, max(logindate))) as lastlogingap
+    from tbl_loginhistory
+    where fk_userid = 'kangkc';
+    
+    --- 회원가입만하고서 로그인을 하지 않은 경우에는 tbl_loginhistory 테이블에 insert 되어진 정보가 없으므로 
+    --- 마지막으로 로그인한 날짜를 회원가입한 날짜로 보도록 한다.
+    select userid, name, email, mobile, postcode, address, detailaddress, extraaddress, gender
+    , birthyyyy, birthmm, birthdd, coin, point, registerday, pwdchangegap
+    , nvl(lastlogingap, trunc(months_between(sysdate, registerday))) as lastlogingap
+    from
+    (select userid, name, email, mobile, postcode, address, detailaddress, extraaddress, gender
+    , substr(birthday,1,4) as birthyyyy, substr(birthday,6,2) as birthmm, substr(birthday,9) as birthdd, coin, point
+    , to_char(registerday, 'yyyy-mm-dd') as registerday
+    , trunc(months_between(sysdate, lastpwdchangedate)) as pwdchangegap
+    from tbl_member
+    where status = 1 and userid = 'youks' and pwd = '9695b88a59a1610320897fa84cb7e144cc51f2984520efb77111d94b402a8382') m
+    cross join
+    (select trunc(months_between(sysdate, max(logindate))) as lastlogingap
+    from tbl_loginhistory
+    where fk_userid = 'youks'
+    ) h;
     
     
     

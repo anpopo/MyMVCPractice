@@ -146,14 +146,25 @@ public class MemberDAO implements InterMemberDAO {
 		try {
 			conn = ds.getConnection();
 			String sql = "select userid, name, email, mobile, postcode, address, detailaddress, extraaddress, gender\n"+
-					"    , substr(birthday,1,4) as birthyyyy, substr(birthday,6,2) as birthmm, substr(birthday,8) as birthdd, coin, point\n"+
+					"    , birthyyyy, birthmm, birthdd, coin, point, registerday, pwdchangegap\n"+
+					"    , nvl(lastlogingap, trunc(months_between(sysdate, registerday))) as lastlogingap\n"+
+					"    from\n"+
+					"    (select userid, name, email, mobile, postcode, address, detailaddress, extraaddress, gender\n"+
+					"    , substr(birthday,1,4) as birthyyyy, substr(birthday,6,2) as birthmm, substr(birthday,9) as birthdd, coin, point\n"+
 					"    , to_char(registerday, 'yyyy-mm-dd') as registerday\n"+
-					"    , trunc(months_between(sysdate, lastpwdchangedate)) as pwdchangegap \n"+
+					"    , trunc(months_between(sysdate, lastpwdchangedate)) as pwdchangegap\n"+
 					"    from tbl_member\n"+
-					"    where status = 1 and userid = ? and pwd = ? ";
+					"    where status = 1 and userid = ? and pwd = ?) m\n"+
+					"    cross join\n"+
+					"    (select trunc(months_between(sysdate, max(logindate))) as lastlogingap\n"+
+					"    from tbl_loginhistory\n"+
+					"    where fk_userid = ?\n"+
+					"    ) h";
+			
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, paraMap.get("userid"));
 			pstmt.setString(2, Sha256.encrypt(paraMap.get("pwd")));
+			pstmt.setString(3, paraMap.get("userid"));
 			
 			rs = pstmt.executeQuery();
 			
@@ -180,13 +191,28 @@ public class MemberDAO implements InterMemberDAO {
 					member.setRequirePwdChange(true);  // 로그인시 암호를 변경하라른 alert을 띄우도록 한다.
 				}
 				
-				sql = " insert into tbl_loginhistory(fk_userid, clientip) "
-						+ " values(?, ?) ";
 				
-				pstmt = conn.prepareStatement(sql);
-				pstmt.setString(1, paraMap.get("userid"));
-				pstmt.setString(2, paraMap.get("clientip"));
-				pstmt.executeUpdate();
+				if (rs.getInt(17) >= 12) {
+					member.setIdle(1);
+					sql = " update tbl_member set idle = 1 where userid = ? ";
+					
+					pstmt = conn.prepareStatement(sql);
+					
+					pstmt.setString(1, paraMap.get("userid"));
+					
+					pstmt.executeUpdate();
+					
+				}
+				if (member.getIdle() != 1) {
+					sql = " insert into tbl_loginhistory(fk_userid, clientip) "
+							+ " values(?, ?) ";
+					
+					pstmt = conn.prepareStatement(sql);
+					pstmt.setString(1, paraMap.get("userid"));
+					pstmt.setString(2, paraMap.get("clientip"));
+					pstmt.executeUpdate();					
+				}
+				
 			}
 			
 			

@@ -2,6 +2,7 @@
     pageEncoding="UTF-8"%>
     
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+    <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <style>
    table#loginTbl , table#snsloginTbl{
       width: 95%;
@@ -23,6 +24,15 @@
 
 <script type="text/javascript">
 	$(document).ready(function(){
+		
+		var loginUserid = localStorage.getItem("saveid");
+		
+		if (loginUserid != null) {
+			$("input#loginUserid").val(loginUserid);
+			$("input:checkbox[id=saveid]").prop("checked", true);
+		}
+		
+		
 		$("button#btnSubmit").click(function(){
 			// 로그인 시도한다.
 			goLogin();
@@ -55,12 +65,25 @@
 			return;  // 함수 끝내기
 		}
 		
+		if ($("input:checkbox[id=saveid]").prop("checked")) {
+			
+			localStorage.setItem("saveid", $("input#loginUserid").val());
+		} else {
+			
+			localStorage.removeItem('saveid');
+		}
+		
 		var frm = document.loginFrm;
 		frm.action = "<%= request.getContextPath()%>/login/login.an";
 		frm.method = "post";
 		frm.submit();
 		
 		
+	}
+	
+	function goLogOut() {
+		
+		location.href="<%= request.getContextPath()%>/login/logout.an"
 	}
 </script>
 
@@ -107,9 +130,27 @@
 
 
 <c:if test="${not empty sessionScope.loginuser}">
-	<hr>
-	<marquee behavior=alternate scrollamount="2"> ${sessionScope.loginuser.name}님이 로그인 중이십니다.</marquee>
-	<hr>
+	<table style="width: 95%; height: 130px;">
+          <tr style="background-color: pink;">
+             <td align="center">
+             	<marquee behavior=alternate scrollamount="2">
+                	<span style="color: blue; font-weight: bold;">${(sessionScope.loginuser).name}</span>
+                	[<span style="color: red; font-weight: bold;">${(sessionScope.loginuser).userid}</span>]님
+                </marquee>
+                <br/><br/>
+                <div align="left" style="padding-left: 20px; line-height: 150%;">
+                   <span style="font-weight: bold;">코인액:</span>&nbsp;&nbsp; <fmt:formatNumber value="${(sessionScope.loginuser).coin}" pattern="###,###" /> 원
+                   <br/>
+                   <span style="font-weight: bold;">포인트:</span>&nbsp;&nbsp; <fmt:formatNumber value="${(sessionScope.loginuser).point}" pattern="###,###" /> POINT
+                </div>
+                <br/>로그인 중...<br/><br/>
+                [<a href="javascript:goEditPersonal('${(sessionScope.loginuser).userid}');">나의정보</a>]&nbsp;&nbsp;
+                 [<a href="javascript:goCoinPurchaseTypeChoice('${(sessionScope.loginuser).userid}');">코인충전</a>] 
+                 <br/><br/>
+                <button type="button" onclick="goLogOut();">로그아웃</button>
+             </td>
+          </tr>
+       </table> 
 
 </c:if>
 
