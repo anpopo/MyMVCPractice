@@ -224,4 +224,35 @@ public class MemberDAO implements InterMemberDAO {
 		
 		return member;
 	}
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public String findUserid(Map<String, String> paraMap) throws SQLException {
+		String userid = null;
+		try {
+			conn = ds.getConnection();
+			String sql = "select userid\n"+
+					"    from tbl_member\n"+
+					"    where status = 1 and name = ? and email = ? ";
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setString(1, paraMap.get("name"));
+			pstmt.setString(2, aes.encrypt(paraMap.get("email")));
+			
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				userid = rs.getString(1);
+				
+			}
+			
+		} catch(UnsupportedEncodingException | GeneralSecurityException e) {
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+		
+		return userid;
+	}
 }

@@ -27,6 +27,8 @@
 		
 		var loginUserid = localStorage.getItem("saveid");
 		
+		// localStorage에 저장되어진 유저의 아이디의 값이 있는지 확인한다.
+		// storage에 유저아이디의 값이 들어있다면,
 		if (loginUserid != null) {
 			$("input#loginUserid").val(loginUserid);
 			$("input:checkbox[id=saveid]").prop("checked", true);
@@ -46,7 +48,32 @@
 			}
 		});
 		
+		
+		$(".myclose").click(function(){
+			javascript:history.go(0);
+		// 현재 페이지를 새로고침을 함으로써 모달창에 입력한 성명과 이메일의 값이 텍스트박스에 남겨있지 않고 삭제하는 효과를 누린다. 
+	    
+		/* === 새로고침(다시읽기) 방법 3가지 차이점 ===
+		   >>> 1. 일반적인 다시읽기 <<<
+		   window.location.reload();
+		   ==> 이렇게 하면 컴퓨터의 캐시에서 우선 파일을 찾아본다.
+		            없으면 서버에서 받아온다. 
+		   
+		   >>> 2. 강력하고 강제적인 다시읽기 <<<
+		   window.location.reload(true);
+		   ==> true 라는 파라미터를 입력하면, 무조건 서버에서 직접 파일을 가져오게 된다.
+		            캐시는 완전히 무시된다.
+		   
+		   >>> 3. 부드럽고 소극적인 다시읽기 <<<
+		   history.go(0);
+		   ==> 이렇게 하면 캐시에서 현재 페이지의 파일들을 항상 우선적으로 찾는다.
+		*/
+		});
 	});
+	
+	
+	
+	
 	// 로그인 처리 함수 로그인을 클릭했을 경우나 엔터를 쳤을 경우 둘다 작동되어야 하기 때문에
 	// 같은 기능을 하는 function을 만들어서 실행만 시켜준다.
 	function goLogin() {

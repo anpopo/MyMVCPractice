@@ -15,4 +15,7 @@ public interface InterMemberDAO {
 	
 	// 입력받은 paraMap 을 가지고 한명의 회원 정보를 리턴시켜주는 메소드
 	MemberVO selectOneMember(Map<String, String> paraMap) throws SQLException;
+	
+	// 아이디 찾기 메소드
+	String findUserid(Map<String, String> paraMap) throws SQLException;
 }

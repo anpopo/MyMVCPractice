@@ -58,6 +58,7 @@ String ctxPath = request.getContextPath();
     	$("#div_findResult").hide();
     	
         if(method == "POST") {
+        	
         	$("input#name").val("${paraMap.name}");
         	$("input#email").val("${paraMap.email}");
         	$("#div_findResult").show();
@@ -66,7 +67,7 @@ String ctxPath = request.getContextPath();
        $("button#btnFind").click(function(){
           // 성명 및 이메일 유효성 검사 생략
      	  var frm = document.idFindFrm;
-      	  frm.action = "<%= ctxPath %>/login/idFind.up";
+      	  frm.action = "<%= ctxPath %>/login/idFind.an";
     	  frm.method = "post";
     	  frm.submit();
        });
